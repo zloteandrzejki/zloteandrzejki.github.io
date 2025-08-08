@@ -1,78 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vote in 16 Categories</title>
+  <title>Voting App</title>
+  <!-- Make sure Supabase is loaded FIRST -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background: #f8f9fa;
-    }
-    .category {
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 1.5rem 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .category h2 {
-      margin-top: 0;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #888;
-      background-color: #eee;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #ddd;
-    }
-    button.voted {
-      background-color: #cfc;
-      border-color: #7c7;
-      color: #333;
-      pointer-events: none;
-    }
-    .voted-label {
-      margin-top: 10px;
-      font-weight: bold;
-      color: green;
-    }
-  </style>
 </head>
 <body>
 
-  <h1>Vote in 16 Categories</h1>
-  <p>Choose one of 6 options in each category. You can vote once per category.</p>
-
   <div id="categories-container"></div>
 
+  <!-- Your code MUST go AFTER Supabase is loaded -->
   <script>
-    // Replace these with your Supabase project values
     const SUPABASE_URL = 'https://frlaetburkjbprmrgmwr.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGFldGJ1cmtqYnBybXJnbXdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2NTMyNzksImV4cCI6MjA3MDIyOTI3OX0.foFrciBnA-23ZNMD7MmJBvMrNonlal2AF2z38uC0CBs';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const categories = [
-      "Best Music", "Best Game", "Best Meme", "Best Streamer",
-      "Best Movie", "Best Series", "Best Clip", "Best Team",
-      "Best Comeback", "Best Design", "Best Voice Line", "Best Fail",
-      "Best Champion", "Best Skin", "Best Play", "Funniest Moment"
-    ];
-
+    const categories = ["Best Meme", "Best Game"]; // shortened for demo
     const options = ["Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6"];
     const votedKey = (category) => `voted_${category}`;
 
     function createVotingUI() {
       const container = document.getElementById("categories-container");
-      container.innerHTML = ''; // clear old content
+      if (!container) return;
+
+      container.innerHTML = '';
 
       categories.forEach(category => {
         const div = document.createElement("div");
@@ -113,25 +64,22 @@
 
     async function vote(category, option) {
       if (localStorage.getItem(votedKey(category))) {
-        alert("You already voted in this category!");
+        alert("Already voted");
         return;
       }
 
-      const { error } = await supabase
-        .from("votes")
-        .insert([{ category, option }]);
+      const { error } = await supabase.from('votes').insert([{ category, option }]);
 
       if (error) {
-        alert("Error submitting vote!");
-        console.error(error);
+        alert("Error submitting vote");
         return;
       }
 
       localStorage.setItem(votedKey(category), option);
-      alert(`You voted for ${option} in "${category}"`);
-      createVotingUI(); // re-render UI
+      createVotingUI();
     }
 
+    // Call after everything is defined
     createVotingUI();
   </script>
 </body>
