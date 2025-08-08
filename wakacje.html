@@ -1,1 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vote in 16 Categories</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    .category {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .category h2 {
+      margin-top: 0;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .voted {
+      background-color: #eee;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Vote in All 16 Categories</h1>
+  <p>You can vote once per category.</p>
+
+  <div id="categories-container"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://frlaetburkjbprmrgmwr.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGFldGJ1cmtqYnBybXJnbXdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2NTMyNzksImV4cCI6MjA3MDIyOTI3OX0.foFrciBnA-23ZNMD7MmJBvMrNonlal2AF2z38uC0CBs';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const categories = [
+      "Best Music", "Best Game", "Best Meme", "Best Streamer",
+      "Best Movie", "Best Series", "Best Clip", "Best Team",
+      "Best Comeback", "Best Design", "Best Voice Line", "Best Fail",
+      "Best Champion", "Best Skin", "Best Play", "Funniest Moment"
+    ];
+
+    const options = ["Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6"];
+
+    const votedKey = (category) => `voted_${category}`;
+
+    function createVotingUI() {
+      const container = document.getElementById("categories-container");
+
+      categories.forEach(category => {
+        const div = document.createElement("div");
+        div.className = "category";
+
+        const title = document.createElement("h2");
+        title.textContent = category;
+        div.appendChild(title);
+
+        options.forEach(option => {
+          const button = document.createElement("button");
+          button.textContent = option;
+          button.onclick = () => vote(category, option);
+
+          if (localStorage.getItem(votedKey(category))) {
+            button.classList.add("voted");
+            button.disabled = true;
+          }
+
+          div.appendChild(button);
+        });
+
+        container.appendChild(div);
+      });
+    }
+
+    async function vote(category, option) {
+      if (localStorage.getItem(votedKey(category))) {
+        alert("You already voted in this category!");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("votes")
+        .insert([{ category, option }]);
+
+      if (error) {
+        alert("Error submitting vote!");
+        console.error(error);
+        return;
+      }
+
+      localStorage.setItem(votedKey(category), option);
+      alert(`You voted for ${option} in "${category}"`);
+
+      // Refresh buttons
+      document.getElementById("categories-container").innerHTML = '';
+      createVotingUI();
+    }
+
+    createVotingUI();
+  </script>
+</body>
+</html>
 
